@@ -1,0 +1,35 @@
+name: Deploy Glue Script and Update Job
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'data_file/script.py'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    # 1. Update the ETL Script file inside S3
+    - name: Upload Script to S3
+      run: |
+        aws s3 cp data_file/script.py s3://tf-code-bucket-shri/script.py
+
+    # 2. Tell AWS Glue to refresh and pull the new script configuration
+    - name: Update Glue Job Configuration
+      run: |
+        aws glue update-job \
+          --job-name "tf-glue-job" \
+          --job-update "Role=arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/YOUR_GLUE_ROLE_NAME,Command={Name=glueetl,ScriptLocation=s3://tf-code-bucket-shri/script.py,PythonVersion=3}"
