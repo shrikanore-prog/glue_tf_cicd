@@ -27,9 +27,13 @@ jobs:
       run: |
         aws s3 cp data_file/script.py s3://tf-code-bucket-shri/script.py
 
-    # 2. Tell AWS Glue to refresh and pull the new script configuration
+    # 2. Dynamically fetch account ID and update Glue Job Configuration
     - name: Update Glue Job Configuration
       run: |
+        # Fetch the active AWS account ID dynamically to prevent cross-account errors
+        ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+        
+        # Execute the update command with your exact job and role configuration
         aws glue update-job \
           --job-name "tf-glue-job" \
-          --job-update "Role=arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/YOUR_GLUE_ROLE_NAME,Command={Name=glueetl,ScriptLocation=s3://tf-code-bucket-shri/script.py,PythonVersion=3}"
+          --job-update "Role=arn:aws:iam::${ACCOUNT_ID}:role/glue_service_role,Command={Name=glueetl,ScriptLocation=s3://tf-code-bucket-shri/script.py,PythonVersion=3}"
