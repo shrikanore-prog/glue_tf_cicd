@@ -33,7 +33,7 @@ jobs:
         # Fetch the active AWS account ID dynamically to prevent cross-account errors
         ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
         
-        # Execute the update command with your exact job and role configuration
+        # Execute the update command with explicitly defined modern GlueVersion parameters
         aws glue update-job \
           --job-name "tf-glue-job" \
-          --job-update "Role=arn:aws:iam::${ACCOUNT_ID}:role/glue_service_role,Command={Name=glueetl,ScriptLocation=s3://tf-code-bucket-shri/script.py,PythonVersion=3}"
+          --job-update "Role=arn:aws:iam::${ACCOUNT_ID}:role/glue_service_role,GlueVersion=4.0,Command={Name=glueetl,ScriptLocation=s3://tf-code-bucket-shri/script.py,PythonVersion=3}"
