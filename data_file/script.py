@@ -1,3 +1,4 @@
+# Force workflow trigger test
 import sys
 from awsglue.transforms import *
 from awsglue.utils import getResolvedOptions
